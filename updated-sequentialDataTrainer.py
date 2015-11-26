@@ -81,17 +81,17 @@ mvalid[1] = np.array(mvalid[1])
 hidden_dropout = 0.10
 hidden_noise   = 0.10
 BATCH=128
-
-layertype = 'LRRNN'
+activation='sigmoid'
+layertype = 'RNN'
 exp = theanets.Experiment(
     theanets.recurrent.Regressor,
     layers=(
         WINDOW_SIZE,
-        (layertype, WINDOW_SIZE),
-        (layertype, WINDOW_SIZE),
-        (layertype, WINDOW_SIZE/2),
-        (layertype, WINDOW_SIZE/4),
-        (layertype, WINDOW_SIZE/8),
+        (layertype, WINDOW_SIZE  ,activation),
+        (layertype, WINDOW_SIZE  ,activation),
+        (layertype, WINDOW_SIZE/2,activation),
+        (layertype, WINDOW_SIZE/4,activation),
+        (layertype, WINDOW_SIZE/8,activation),
         1
     )
 )
