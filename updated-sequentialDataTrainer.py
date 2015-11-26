@@ -83,7 +83,8 @@ for sample in parsed_samples: # [train, valid]
     mvalid[0].append(valid[0])
     mvalid[1].append(valid[1])
 
-BATCH=128
+BATCH=256
+
 mtrain[0] = np.array(mtrain[0])
 mtrain[1] = np.array(mtrain[1])
 mvalid[0] = np.array(mvalid[0])
@@ -96,10 +97,12 @@ exp.train(
     mtrain,
     mvalid,
     algo='layerwise',
-    patience=100,
+    patience=10,
     learning_rate=1e-4,
     max_gradient_norm=10,
     hidden_dropout=0.30,
+    hidden_noise=0.1,
+    min_improvement=0.01,
     save_progress=("preregressor-{}".format(datetime.datetime.now().isoformat())),
     save_every=5,
     #        train_batches=100,
@@ -112,9 +115,11 @@ exp.train(
     mvalid,
     algo='rmsprop',
     patience=100,
+    min_improvement=0.01,
     max_gradient_norm=10,
     learning_rate=1e-4,
     hidden_dropout=0.30,
+    hidden_noise=0.1,
     save_progress=("regressor-{}".format(datetime.datetime.now().isoformat())),
     save_every=5,
     #        train_batches=100,
