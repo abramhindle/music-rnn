@@ -91,28 +91,26 @@ mvalid[1] = np.array(mvalid[1])
 
 
 # able to call train multiple times -> parse file and train -> GOTO next file. Save every 10 files?
-# my_logger.info('begin pretrain')
-# exp.train(
-#     mtrain,
-#     mvalid,
-#     algo='layerwise',
-#     trainer='nag',
-#     patience=100,
-#     learning_rate=1e-4,
-#     save_progress=("preregressor-{}".format(datetime.datetime.now().isoformat())),
-#     save_every=5,
-#     #        train_batches=100,
-#     batch_size=BATCH,
-# )
+my_logger.info('begin pretrain')
+exp.train(
+    mtrain,
+    mvalid,
+    algo='layerwise',
+    patience=100,
+    learning_rate=1e-4,
+    save_progress=("preregressor-{}".format(datetime.datetime.now().isoformat())),
+    save_every=5,
+    #        train_batches=100,
+    batch_size=BATCH,
+)
 
 my_logger.info('begin training')
 exp.train(
     mtrain,
     mvalid,
-    algo='nag',
+    algo='rmsprop',
     patience=100,
     learning_rate=1e-4,
-    max_gradient_norm=10,
     save_progress=("regressor-{}".format(datetime.datetime.now().isoformat())),
     save_every=5,
     #        train_batches=100,
