@@ -41,18 +41,6 @@ my_logger.addHandler(handler)
 
 WINDOW_SIZE = 150
 
-exp = theanets.Experiment(
-    theanets.recurrent.Regressor,
-    layers=(
-        WINDOW_SIZE,
-        ('rnn', WINDOW_SIZE),
-        ('rnn', WINDOW_SIZE),
-        ('rnn', WINDOW_SIZE/2),
-        ('rnn', WINDOW_SIZE/4),
-        ('rnn', WINDOW_SIZE/8),
-        1
-    )
-)
 
 #exp.load('brains/regressor-2015-11-15T08:02:13.087115') # the brain of the 779th index => start training on 780
 vers = 0 # start training on 770 cause we dont have a save
@@ -83,12 +71,30 @@ for sample in parsed_samples: # [train, valid]
     mvalid[0].append(valid[0])
     mvalid[1].append(valid[1])
 
-BATCH=256
+BATCH=128
 
 mtrain[0] = np.array(mtrain[0])
 mtrain[1] = np.array(mtrain[1])
 mvalid[0] = np.array(mvalid[0])
 mvalid[1] = np.array(mvalid[1])
+
+hidden_dropout = 0.10
+hidden_noise   = 0.10
+BATCH=128
+
+layertype = 'LRRNN'
+exp = theanets.Experiment(
+    theanets.recurrent.Regressor,
+    layers=(
+        WINDOW_SIZE,
+        (layertype, WINDOW_SIZE),
+        (layertype, WINDOW_SIZE),
+        (layertype, WINDOW_SIZE/2),
+        (layertype, WINDOW_SIZE/4),
+        (layertype, WINDOW_SIZE/8),
+        1
+    )
+)
 
 
 # able to call train multiple times -> parse file and train -> GOTO next file. Save every 10 files?
@@ -100,8 +106,9 @@ exp.train(
     patience=10,
     learning_rate=1e-4,
     max_gradient_norm=10,
-    hidden_dropout=0.30,
-    hidden_noise=0.1,
+    input_dropout =hidden_dropout,
+    hidden_dropout=hidden_dropout,
+    #hidden_noise=hidden_noise,
     min_improvement=0.01,
     save_progress=("preregressor-{}".format(datetime.datetime.now().isoformat())),
     save_every=5,
@@ -118,8 +125,8 @@ exp.train(
     min_improvement=0.01,
     max_gradient_norm=10,
     learning_rate=1e-4,
-    hidden_dropout=0.30,
-    hidden_noise=0.1,
+    hidden_dropout=hidden_dropout,
+    hidden_noise=hidden_noise,
     save_progress=("regressor-{}".format(datetime.datetime.now().isoformat())),
     save_every=5,
     #        train_batches=100,
