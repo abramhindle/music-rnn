@@ -82,6 +82,21 @@ def json_eq(a,b):
 	''' equality via json -- slow'''
 	return json.dumps(a) == json.dumps(b)	
 
+def insert_empty_groups(groups):
+	''' damn time series and 0 measures -- this method adds empties to missing timesteps'''
+	time = 0
+	out = list()
+	i = 0
+	while(i < len(groups)):
+		if len(groups[i]) > 0 and time == groups[i][0][0]:
+			out.append(groups[i])
+			i+=1			
+		else:
+			out.append(list())
+		time += 1
+	return out
+
+''' used for test cases '''
 convert_lines_test_x = [
 	('%s,1.27866666666667,1,59,'  % (0)),
 	('%s,1.27866666666667,2,59,'  % (0)),
@@ -101,19 +116,6 @@ convert_lines_test_x = [
 	('%s,0.318666666666667,2,67,' % (TS*5+0.0001)) ]
 
 
-def insert_empty_groups(groups):
-	''' damn time series and 0 measures -- this method adds empties to missing timesteps'''
-	time = 0
-	out = list()
-	i = 0
-	while(i < len(groups)):
-		if len(groups[i]) > 0 and time == groups[i][0][0]:
-			out.append(groups[i])
-			i+=1			
-		else:
-			out.append(list())
-		time += 1
-	return out
 
 		
 
