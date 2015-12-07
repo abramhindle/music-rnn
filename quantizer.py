@@ -1,4 +1,5 @@
 import json
+import logging
 
 TS = 60.0/(4*16.0*180.0) # min timestep
 NVOICES = 4 # allow 4 notes 
@@ -19,6 +20,7 @@ def line2data(line):
 
 def convert_file(filename):
         ''' convert an entire file to lines then to desc data '''
+        logging.info("Loading %s" % filename)
         lines = file(filename).readlines()
         return convert_lines(lines)
 
@@ -74,6 +76,7 @@ def parse_descs(descs):
         hdescs = insert_empty_groups(group_lines(descs))
         vectors = [desc_2_dl(descs) for descs in hdescs]
         return vectors
+
 def convert_lines(lines):
         descs = [line2data(str) for str in lines]
         return parse_descs(descs)

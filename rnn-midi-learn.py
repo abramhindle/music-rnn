@@ -36,6 +36,7 @@ import numpy as np
 
 import logging
 import logging.handlers
+import quantizer
 
 #from sklearn import cross_validation
 #import matplotlib.pyplot as plt
@@ -53,7 +54,7 @@ handler = logging.handlers.RotatingFileHandler(
 my_logger = logging.getLogger('GeneralLogger')
 my_logger.addHandler(handler)
 
-WINDOW_SIZE = 150
+WINDOW_SIZE = quantizer.TVECSIZE
 
 
 parser = argparse.ArgumentParser(description='Learn MIDI')
@@ -68,24 +69,20 @@ scores = args.scores
 mtrain = [[],[]]
 mvalid = [[],[]]
 
+parsed_samples = pickle.load(open("saved_files.mb", "rb"))
 
+my_logger.info('begin loading files.')
+qscores = [quantizer.convert_file(filename) for filename in scores]
+my_logger.info('done loading')
 
-my_logger.info('begin load file.')
-parsed_samples = []
-if os.path.isfile('saved_files.mb'):
-    parsed_samples = pickle.load(open("saved_files.mb", "rb"))
-else:
-    print("missing saved_files.p please run the parser.")
-    sys.exit(0)
-my_logger.info('end load file.')
-
-for sample in parsed_samples: # [train, valid]
-    train = sample[0]
-    valid = sample[1]
-    mtrain[0].append(train[0])
-    mtrain[1].append(train[1])
-    mvalid[0].append(valid[0])
-    mvalid[1].append(valid[1])
+# now take the scores and make training and validation sets
+for score in qscores:
+    n = len(score)
+    s = 3*n/4
+    mtrain[0].append(score[0:s-1])
+    mtrain[1].append(score[1:s])
+    mvalid[0].append(score[s:-1])
+    mvalid[1].append(score[s+1:])
 
 BATCH=128
 
@@ -94,8 +91,8 @@ mtrain[1] = np.array(mtrain[1])
 mvalid[0] = np.array(mvalid[0])
 mvalid[1] = np.array(mvalid[1])
 
-hidden_dropout = 0.10
-hidden_noise   = 0.10
+hidden_dropout = 0.01
+hidden_noise   = 0.01
 BATCH=128
 activation='sigmoid'
 layertype = 'RNN'
@@ -103,12 +100,10 @@ exp = theanets.Experiment(
     theanets.recurrent.Regressor,
     layers=(
         WINDOW_SIZE,
-        (layertype, WINDOW_SIZE  ,activation),
-        (layertype, WINDOW_SIZE  ,activation),
-        (layertype, WINDOW_SIZE/2,activation),
-        (layertype, WINDOW_SIZE/4,activation),
-        (layertype, WINDOW_SIZE/8,activation),
-        1
+        (layertype, WINDOW_SIZE*2,activation),
+        (layertype, 3*WINDOW_SIZE/2,activation),
+        (layertype, WINDOW_SIZE,activation),
+        WINDOW_SIZE
     )
 )
 
