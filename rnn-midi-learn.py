@@ -103,7 +103,6 @@ for score in qscores:
 my_logger.info('Done Split sets: %s, %s' % (len(mtrain[0]),len(mvalid[0])))
 
     
-
 my_logger.info('Making NP Arrays')
 mtrain[0] = np.array(mtrain[0])
 mtrain[1] = np.array(mtrain[1])
@@ -114,7 +113,7 @@ my_logger.info('Done')
 
 hidden_dropout = 0.01
 hidden_noise   = 0.01
-BATCH=64
+BATCH=128
 activation='sigmoid'
 layertype = 'RNN'
 exp = theanets.Experiment(
