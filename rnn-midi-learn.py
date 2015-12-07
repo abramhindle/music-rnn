@@ -69,31 +69,52 @@ scores = args.scores
 mtrain = [[],[]]
 mvalid = [[],[]]
 
-parsed_samples = pickle.load(open("saved_files.mb", "rb"))
+# parsed_samples = pickle.load(open("saved_files.mb", "rb"))
 
 my_logger.info('begin loading files.')
 qscores = [quantizer.convert_file(filename) for filename in scores]
 my_logger.info('done loading')
 
+my_logger.info('Split sets')
+
+# unfortunately we have split stuff up
+splitsize = 512
+
 # now take the scores and make training and validation sets
 for score in qscores:
     n = len(score)
-    s = 3*n/4
-    mtrain[0].append(score[0:s-1])
-    mtrain[1].append(score[1:s])
-    mvalid[0].append(score[s:-1])
-    mvalid[1].append(score[s+1:])
+    for i in range(0,n / splitsize):
+        rindex = i * splitsize
+        r = rindex + splitsize
+        if r+1 > n:
+            # if we're over the end just 
+            break
+        ain  = np.array(score[rindex:r],      dtype=np.float32)
+        aout = np.array(score[rindex+1:r+1] , dtype=np.float32)
+        if i % 4 == 0:
+            # validate
+            assignarr = mvalid
+        else:
+            # train
+            assignarr = mtrain
+        assignarr[0].append(ain)
+        assignarr[1].append(aout)
 
-BATCH=128
+my_logger.info('Done Split sets: %s, %s' % (len(mtrain[0]),len(mvalid[0])))
 
+    
+
+my_logger.info('Making NP Arrays')
 mtrain[0] = np.array(mtrain[0])
 mtrain[1] = np.array(mtrain[1])
 mvalid[0] = np.array(mvalid[0])
 mvalid[1] = np.array(mvalid[1])
+my_logger.info('Done')
+
 
 hidden_dropout = 0.01
 hidden_noise   = 0.01
-BATCH=128
+BATCH=64
 activation='sigmoid'
 layertype = 'RNN'
 exp = theanets.Experiment(
@@ -114,7 +135,7 @@ exp.train(
     mtrain,
     mvalid,
     algo='layerwise',
-    patience=10,
+    patience=2,
     learning_rate=1e-4,
     max_gradient_norm=10,
     input_dropout =hidden_dropout,
