@@ -181,5 +181,11 @@ def tests():
         descs = [desc1,desc2,desc2,desc2,desc2,desc2]
         assert json_eq(oarr,desc_2_dl(descs))
 
-tests()
-convert_lines_test()
+
+def run_tests():
+        tests()
+        convert_lines_test()
+
+if __name__ == "__main__":
+        run_tests()
+        

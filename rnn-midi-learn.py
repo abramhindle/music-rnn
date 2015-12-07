@@ -1,8 +1,22 @@
 #!/usr/bin/env python2.7
-
-#from common_functions import get_wattlog_from_file, get_timings_from_file, get_time_syscall_pairs_from_file, find_all_syscall_names, list_sorted_subdirectories
-
-#from multiprocessing import Pool
+#
+#    Use an RNN to learn some notes
+#    Copyright (C) 2015 Stephen Romansky, Abram Hindle
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
 
 import climate
 import re
@@ -42,16 +56,18 @@ my_logger.addHandler(handler)
 WINDOW_SIZE = 150
 
 
-#exp.load('brains/regressor-2015-11-15T08:02:13.087115') # the brain of the 779th index => start training on 780
-vers = 0 # start training on 770 cause we dont have a save
+parser = argparse.ArgumentParser(description='Learn MIDI')
+parser.add_argument('scores', help='scores',nargs='+')
+# parser.add_argument('lin', help='Path of (.midi) label files for training/validation/testing')
+#parser.add_argument('tmp', help='Path of directory to write intermediary or data save files',default="./tmp/")
+args = parser.parse_args()
+scores = args.scores
+
+
 
 mtrain = [[],[]]
 mvalid = [[],[]]
 
-
-
-directory = '../calc-strace-time'
-bad_counter = 0 + vers # we save weird on the bad_counter - 1 % 10 verions
 
 
 my_logger.info('begin load file.')
