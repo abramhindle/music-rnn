@@ -38,9 +38,13 @@ def clamp(x,mmin,mmax):
         return max(mmin,min(mmax,x))
 
 def normit(x):
+        if np.isclose(x,0.0):
+                return 0.0
         return x / float(1 + x)
 
 def denormit(y):
+        if np.isclose(y,1.0,rtol=1e-15,atol=1e-17):
+                return np.inf
         return y / float(1 - y)
 
 def desc_2_dl(descs):
@@ -81,7 +85,7 @@ def dl_2_desc_test():
                 print x
                 assert x[0] == 0
         # don't test time vec[0] = 1.27866666666667
-        vec[0] = 1.0 # it plays
+        vec[0] = normit(1.0) # it plays
         vec[1] = 0.1 # channel 1
         vec[17+5] = 0.07 # instrument 5
         descs = dl_2_desc(vec)
@@ -90,7 +94,7 @@ def dl_2_desc_test():
         assert descs[0][CHANNEL] == 1
         assert descs[0][NOTE] == 5
         assert descs[0][LEN] > 0
-        vec[VECSIZE] = 0.11 # play it
+        vec[VECSIZE] = normit(0.11) # play it
         vec[VECSIZE+1] = 0.1 # channel 1
         vec[VECSIZE+17+5] = 0.07 # instrument 5
         descs = dl_2_desc(vec)
@@ -101,7 +105,7 @@ def dl_2_desc_test():
         assert descs[1][CHANNEL] == 1
         assert descs[1][NOTE] == 5
         assert descs[1][LEN] > 0
-        vec[2*VECSIZE] = 0.11 # play it
+        vec[2*VECSIZE] = normit(0.11) # play it
         vec[2*VECSIZE+1] = 0.1 # channel 1
         vec[2*VECSIZE+17+6] = 0.07 # instrument 6
         descs = dl_2_desc(vec)
@@ -116,7 +120,7 @@ def dl_2_desc_test():
         assert descs[2][CHANNEL] == 1
         assert descs[2][NOTE] == 6
         assert descs[2][LEN] > 0
-        vec[3*VECSIZE] = 0.11 # play it
+        vec[3*VECSIZE] = normit(0.11) # play it
         vec[3*VECSIZE+1] = 0.1 # channel 1
         vec[3*VECSIZE+17+9] = 0.07 # instrument 9
         descs = dl_2_desc(vec)
@@ -124,15 +128,18 @@ def dl_2_desc_test():
         assert descs[0][CHANNEL] == 1
         assert descs[0][NOTE] == 5
         assert descs[0][LEN] > 0
+        assert np.isclose(descs[0][LEN],1.00)
         assert descs[1][CHANNEL] == 1
         assert descs[1][NOTE] == 5
         assert descs[1][LEN] > 0
         assert descs[2][CHANNEL] == 1
         assert descs[2][NOTE] == 6
         assert descs[2][LEN] > 0
+        assert np.isclose(descs[2][LEN],0.11)
         assert descs[3][CHANNEL] == 1
         assert descs[3][NOTE] == 9
         assert descs[3][LEN] > 0
+        assert np.isclose(descs[3][LEN],0.11)
 
         
         
