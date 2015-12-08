@@ -37,6 +37,12 @@ def clamp(x,mmin,mmax):
         ''' clamp a value between mmin and mmax '''
         return max(mmin,min(mmax,x))
 
+def normit(x):
+        return x / float(1 + x)
+
+def denormit(y):
+        return y / float(1 - y)
+
 def desc_2_dl(descs):
         ''' convert a desc to a list for deep learning '''
         vec = TVECSIZE*[0.0]        
@@ -45,7 +51,7 @@ def desc_2_dl(descs):
                 if i == NVOICES:
                         break
                 non,noffb,noff,channel,note = desc
-                vec[i*VECSIZE+0] = noff # 1
+                vec[i*VECSIZE+0] = normit(noff) # 1
                 vec[i*VECSIZE+1+clamp(channel-1,0,15)] = 1.0 #17
                 vec[i*VECSIZE+17+clamp(note,0,127)]    = 1.0
                 i += 1
@@ -58,7 +64,7 @@ def dl_2_desc(dl,threshold=0.01):
                 if (dl[offset] > 0.0):
                         descs[i][CHANNEL] = 1+np.argmax(dl[offset+1:offset+1+16])
                         descs[i][NOTE]    = np.argmax(dl[offset+17:offset+17+128])
-                        descs[i][LEN]     = dl[offset] # scale this                        
+                        descs[i][LEN]     = denormit(dl[offset]) # scale this                        
         return descs
 
 
@@ -215,8 +221,8 @@ def convert_lines_test():
         ts4 = 4*TS
         ts6 = 6*TS
         vectors = convert_lines(convert_lines_test_x)
-        assert vectors[0][0] == 1.27866666666667
-        assert vectors[0][VECSIZE] == 1.27866666666667
+        assert np.isclose(vectors[0][0],normit(1.27866666666667))
+        assert np.isclose(vectors[0][VECSIZE],normit(1.27866666666667))
         assert vectors[0][17+59] == 1.0
         assert vectors[1][17+62] == 1.0
         assert vectors[2][17+66] == 1.0
@@ -234,6 +240,8 @@ def tests():
         assert 15 == clamp(16-1,0,15)
         assert 15 == clamp(16,0,15)
         assert 0 == clamp(-1,0,15)
+        assert np.isclose(denormit(normit(1.0)),1.0)
+        assert np.isclose(denormit(normit(30.0)),30.0)
         data  = [[1],[1],[1],[2]]
         odata = [[[1],[1],[1]],[[2]]]
         odata_p = group_lines(data)
@@ -243,31 +251,34 @@ def tests():
         odata_p = group_lines(data2)
         assert json_eq(odata_p,odata2)
         oarr = TVECSIZE*[0.0]
-        oarr[0*VECSIZE] = 1.0
+        oarr[0*VECSIZE] = normit(1.0)
         oarr[0*VECSIZE+16] = 1.0 # channel 16
         oarr[0*VECSIZE+17] = 1.0 # note 0
+        oarr = np.array(oarr)
         desc1 = [0,int(1.0/TS),1.0,16,0]
         desc2 = [0,int(1.0/TS),1.0,2,31]
         descs = [desc1]
-        assert json_eq(oarr,desc_2_dl(descs))
+        assert np.isclose(oarr,desc_2_dl(descs)).all()
         descs = [desc1,desc2]
-        oarr[1*VECSIZE] = 1.0
+        oarr[1*VECSIZE] = normit(1.0)
         oarr[1*VECSIZE+1+2-1] = 1.0 # channel 2
         oarr[1*VECSIZE+17+31] = 1.0 # note 31
-        assert json_eq(oarr,desc_2_dl(descs))
-        assert line2data('0.00520833333333,1.27866666666667,1,59,') == [0, 245, 1.27866666666667, 1, 59]
+        assert np.isclose(oarr,desc_2_dl(descs)).all()
+        ld = np.array(line2data('0.00520833333333,1.27866666666667,1,59,'))
+        old = np.array([0, 245, 1.27866666666667, 1, 59])
+        assert np.isclose(ld,old).all()
         descs = [desc1,desc2,desc2,desc2]
-        oarr[2*VECSIZE] = 1.0
+        oarr[2*VECSIZE] = normit(1.0)
         oarr[2*VECSIZE+1+2-1] = 1.0 # channel 2
         oarr[2*VECSIZE+17+31] = 1.0 # note 31
-        oarr[3*VECSIZE] = 1.0
+        oarr[3*VECSIZE] = normit(1.0)
         oarr[3*VECSIZE+1+2-1] = 1.0 # channel 2
         oarr[3*VECSIZE+17+31] = 1.0 # note 31
         # test 4 voices
-        assert json_eq(oarr,desc_2_dl(descs))
+        assert np.isclose(oarr,desc_2_dl(descs)).all()
         # test more voices!
         descs = [desc1,desc2,desc2,desc2,desc2,desc2]
-        assert json_eq(oarr,desc_2_dl(descs))
+        assert np.isclose(oarr,desc_2_dl(descs)).all()
 
 
 def run_tests():
