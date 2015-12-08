@@ -113,7 +113,7 @@ my_logger.info('Done')
 
 hidden_dropout = 0.01
 hidden_noise   = 0.01
-BATCH=128
+BATCH=64
 activation='sigmoid'
 layertype = 'RNN'
 exp = theanets.Experiment(
@@ -152,7 +152,7 @@ exp.train(
     mtrain,
     mvalid,
     algo='rmsprop',
-    patience=100,
+    patience=10,
     min_improvement=0.01,
     max_gradient_norm=10,
     learning_rate=1e-4,

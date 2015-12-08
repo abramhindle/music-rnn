@@ -1,12 +1,14 @@
 import json
 import logging
+import numpy as np
 
 TS = 60.0/(4*16.0*180.0) # min timestep
 NVOICES = 4 # allow 4 notes 
 VECSIZE = 16+127+1 # size of 1 midi note
 TVECSIZE = NVOICES * VECSIZE # size of DL vector
-
-
+CHANNEL = 3
+NOTE = 4
+LEN=2
 def time2bucket(time):
         ''' quantize time '''
         return int(time/TS)
@@ -37,7 +39,7 @@ def clamp(x,mmin,mmax):
 
 def desc_2_dl(descs):
         ''' convert a desc to a list for deep learning '''
-        vec = TVECSIZE*[0.0]
+        vec = TVECSIZE*[0.0]        
         i = 0
         for desc in descs:
                 if i == NVOICES:
@@ -49,6 +51,89 @@ def desc_2_dl(descs):
                 i += 1
         return vec
 
+def dl_2_desc(dl,threshold=0.01):
+        descs = NVOICES * [[0,0,0,0,0]]
+        for i in range(0,NVOICES):
+                offset = i * VECSIZE
+                if (dl[offset] > 0.0):
+                        descs[i][CHANNEL] = 1+np.argmax(dl[offset+1:offset+1+16])
+                        descs[i][NOTE]    = np.argmax(dl[offset+17:offset+17+128])
+                        descs[i][LEN]     = dl[offset] # scale this                        
+        return descs
+
+
+test_vec = None
+def dl_2_desc_test():
+        global test_vec
+        test_vec = np.random.uniform(low=0.0001,high=0.01,size=TVECSIZE)
+        for i in range(0,NVOICES):
+                test_vec[i*VECSIZE] = 0.0
+        vec = test_vec
+        descs = dl_2_desc(vec)
+        assert len(descs) == NVOICES
+        for x in descs:
+                print x
+                assert x[0] == 0
+        # don't test time vec[0] = 1.27866666666667
+        vec[0] = 1.0 # it plays
+        vec[1] = 0.1 # channel 1
+        vec[17+5] = 0.07 # instrument 5
+        descs = dl_2_desc(vec)
+        assert len(descs) == NVOICES
+        print descs[0]
+        assert descs[0][CHANNEL] == 1
+        assert descs[0][NOTE] == 5
+        assert descs[0][LEN] > 0
+        vec[VECSIZE] = 0.11 # play it
+        vec[VECSIZE+1] = 0.1 # channel 1
+        vec[VECSIZE+17+5] = 0.07 # instrument 5
+        descs = dl_2_desc(vec)
+        assert len(descs) == NVOICES
+        assert descs[0][CHANNEL] == 1
+        assert descs[0][NOTE] == 5
+        assert descs[0][LEN] > 0
+        assert descs[1][CHANNEL] == 1
+        assert descs[1][NOTE] == 5
+        assert descs[1][LEN] > 0
+        vec[2*VECSIZE] = 0.11 # play it
+        vec[2*VECSIZE+1] = 0.1 # channel 1
+        vec[2*VECSIZE+17+6] = 0.07 # instrument 6
+        descs = dl_2_desc(vec)
+        print descs
+        assert len(descs) == NVOICES
+        assert descs[0][CHANNEL] == 1
+        assert descs[0][NOTE] == 5
+        assert descs[0][LEN] > 0
+        assert descs[1][CHANNEL] == 1
+        assert descs[1][NOTE] == 5
+        assert descs[1][LEN] > 0
+        assert descs[2][CHANNEL] == 1
+        assert descs[2][NOTE] == 6
+        assert descs[2][LEN] > 0
+        vec[3*VECSIZE] = 0.11 # play it
+        vec[3*VECSIZE+1] = 0.1 # channel 1
+        vec[3*VECSIZE+17+9] = 0.07 # instrument 9
+        descs = dl_2_desc(vec)
+        assert len(descs) == NVOICES
+        assert descs[0][CHANNEL] == 1
+        assert descs[0][NOTE] == 5
+        assert descs[0][LEN] > 0
+        assert descs[1][CHANNEL] == 1
+        assert descs[1][NOTE] == 5
+        assert descs[1][LEN] > 0
+        assert descs[2][CHANNEL] == 1
+        assert descs[2][NOTE] == 6
+        assert descs[2][LEN] > 0
+        assert descs[3][CHANNEL] == 1
+        assert descs[3][NOTE] == 9
+        assert descs[3][LEN] > 0
+
+        
+        
+                
+
+
+                
 def first(x):
         return x[0]
 
@@ -188,7 +273,8 @@ def tests():
 def run_tests():
         tests()
         convert_lines_test()
-
+        dl_2_desc_test()
+        
 if __name__ == "__main__":
         run_tests()
         
