@@ -114,8 +114,8 @@ my_logger.info('Done')
 hidden_dropout = 0.01
 hidden_noise   = 0.01
 BATCH=64
-activation='sigmoid'
-layertype = 'RNN'
+activation='relu'
+layertype = 'LSTM'
 exp = theanets.Experiment(
     theanets.recurrent.Regressor,
     layers=(

@@ -28,16 +28,4 @@ if (args.idiot):
     
 mtest = np.array([our_score])
 preds = network.predict( mtest )
-descs = [quantizer.dl_2_desc(pred) for pred in preds[0]]
-# get IDs for anything that's defined
-ids = [i for i in range(0,len(our_score)) if ((our_score[i]!=0.0).any())]
-defdescs = [descs[i] for i in ids]
-
-input = np.array([our_score[ids]])
-# y = network.predict_sequence(mtest[0],100)
-for i in range(0,100):
-    y = network.predict(input)
-    z = quantizer.dl_2_desc(  y[0][-1] )
-    print z
-    input = np.array([np.concatenate((input[0],y[0][-1:]))])
 
