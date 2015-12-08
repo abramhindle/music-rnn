@@ -68,7 +68,7 @@ def dl_2_desc(dl,threshold=0.01):
                 if (dl[offset] > 0.0):
                         descs[i][CHANNEL] = 1+np.argmax(dl[offset+1:offset+1+16])
                         descs[i][NOTE]    = np.argmax(dl[offset+17:offset+17+128])
-                        descs[i][LEN]     = denormit(dl[offset]) # scale this                        
+                        descs[i][LEN]     = denormit(dl[offset]) # scale this    
         return descs
 
 
