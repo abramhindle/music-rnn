@@ -4,7 +4,7 @@ import numpy as np
 
 TS = 60.0/(4*16.0*180.0) # min timestep
 NVOICES = 4 # allow 4 notes 
-VECSIZE = 16+127+1 # size of 1 midi note
+VECSIZE = 16+128+1 # size of 1 midi note
 TVECSIZE = NVOICES * VECSIZE # size of DL vector
 CHANNEL = 3
 NOTE = 4
@@ -52,7 +52,7 @@ def desc_2_dl(descs):
         return vec
 
 def dl_2_desc(dl,threshold=0.01):
-        descs = NVOICES * [[0,0,0,0,0]]
+        descs = [5*[0] for i in range(0,NVOICES)]
         for i in range(0,NVOICES):
                 offset = i * VECSIZE
                 if (dl[offset] > 0.0):
