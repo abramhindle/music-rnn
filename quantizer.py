@@ -75,16 +75,12 @@ def dl_2_events(preds):
                 for j in range(0,TVECSIZE):
                         channel = 1 + math.floor(j/VECSIZE)
                         instr   = j % VECSIZE
-                        if state[j] and preds[i][j] > thresh:
-                                pass
-                        elif not state[j] and preds[i][j] > thresh:
+                        if not state[j] and preds[i][j] > thresh:
                                 out.append(note_on(when, channel, instr))
                                 state[j] = True
                         elif state[j] and not preds[i][j] > thresh:
                                 out.append(note_off(when, channel, instr))
                                 state[j] = False
-                        else:
-                                pass
         return out
                                 
 

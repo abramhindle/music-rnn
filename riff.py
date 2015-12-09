@@ -6,6 +6,7 @@ import logging
 import logging.handlers
 import argparse
 import quantizer
+import os
 
 # code clone
 parser = argparse.ArgumentParser(description='Estimate MIDI')
@@ -25,6 +26,13 @@ our_score = np.array(qscores[0],dtype=np.float32)
 # stupid hack for a bad brain
 if (args.idiot):
     our_score = our_score[:,0:576]
+
+
+
+events = quantizer.dl_2_events(our_score)
+pattern = midiit.generate_midi(events)
+midiit.pattern_to_file("input.mid",pattern)
+
     
 mtest = np.array([our_score])
 preds = network.predict( mtest )
@@ -41,4 +49,20 @@ def eval_seq( score ):
     mtest = np.array([score])
     preds = network.predict( mtest )
     events = quantizer.dl_2_events(preds[0])
-    return (events)
+    return (events,preds)
+
+def recursive_eval( score, recurs ):
+    mtest = np.array([score])
+    for i in range(0,recurs):
+        preds = network.predict( mtest )
+        mtest = preds
+    return mtest
+
+def play_midi_from_arr(preds):
+    events = quantizer.dl_2_events(preds[0])
+    play_midi(events)
+
+def play_midi(events):
+    pattern = midiit.generate_midi(events)
+    midiit.pattern_to_file("play.mid",pattern)
+    os.system("xterm -e timidity play.mid &")

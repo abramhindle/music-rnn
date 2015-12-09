@@ -9,8 +9,10 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # 
 import midi
-TEMPO = 180
-TICK = int((self.TEMPO / 60.0) * self.RESOLUTION * delay)
+TEMPO = 90
+RESOLUTION = 1000
+TICK = 60.0/(4*16.0*180)
+
 
 def note_on(when,channel,note,velocity=60):
     ticktime = int(when/TICK)
@@ -20,7 +22,7 @@ def note_off(when,channel,note,velocity=0):
     ticktime = int(when/TICK)
     return midi.NoteOffEvent(tick=ticktime, velocity=velocity, pitch=note)
 
-def generate_midi(note_tuples,NVOICES=4):
+def generate_midi(note_tuples,NVOICES=4,TEMPO=TEMPO):
     # Instantiate a MIDI Pattern (contains a list of tracks)
     pattern = midi.Pattern()
     # Instantiate a MIDI Track (contains a list of MIDI events)
@@ -29,6 +31,7 @@ def generate_midi(note_tuples,NVOICES=4):
     pattern.append(track)
     # Instantiate a MIDI note on event, append it to the track
     lastwhen = 0
+    track.append(midi.SetTempoEvent(bpm=TEMPO))
     for nt in note_tuples:
         t,when,channel,note = nt        
         if t == "on":
