@@ -16,11 +16,11 @@ TICK = 60.0/(4*16.0*180)
 
 def note_on(when,channel,note,velocity=60):
     ticktime = int(when/TICK)
-    return midi.NoteOnEvent(tick=ticktime, velocity=velocity, pitch=note)
+    return midi.NoteOnEvent(tick=ticktime, channel=channel,velocity=velocity, pitch=note)
 
 def note_off(when,channel,note,velocity=0):
     ticktime = int(when/TICK)
-    return midi.NoteOffEvent(tick=ticktime, velocity=velocity, pitch=note)
+    return midi.NoteOffEvent(tick=ticktime, channel=channel,velocity=velocity, pitch=note)
 
 def generate_midi(note_tuples,NVOICES=4,TEMPO=TEMPO):
     # Instantiate a MIDI Pattern (contains a list of tracks)
