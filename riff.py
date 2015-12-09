@@ -7,6 +7,8 @@ import logging.handlers
 import argparse
 import quantizer
 import os
+import midiit
+
 
 # code clone
 parser = argparse.ArgumentParser(description='Estimate MIDI')
@@ -39,7 +41,6 @@ preds = network.predict( mtest )
 events = quantizer.dl_2_events(preds[0])
 print events
 
-import midiit
 
 # from itself
 pattern = midiit.generate_midi(events)
@@ -58,6 +59,16 @@ def recursive_eval( score, recurs ):
         mtest = preds
     return mtest
 
+def evolution( score, recurs ):
+    mtest = np.array([score])
+    for i in range(0,recurs):
+        preds = network.predict( mtest )
+        mtest = preds
+        events = quantizer.dl_2_events(preds[0])
+        pattern = midiit.generate_midi(events)
+        midiit.pattern_to_file("evolution-{:04d}.mid".format(i),pattern)    
+    return mtest
+
 def play_midi_from_arr(preds):
     events = quantizer.dl_2_events(preds[0])
     play_midi(events)
@@ -66,3 +77,4 @@ def play_midi(events):
     pattern = midiit.generate_midi(events)
     midiit.pattern_to_file("play.mid",pattern)
     os.system("xterm -e timidity play.mid &")
+
