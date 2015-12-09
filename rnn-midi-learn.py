@@ -102,7 +102,9 @@ for score in qscores:
 
 my_logger.info('Done Split sets: %s, %s' % (len(mtrain[0]),len(mvalid[0])))
 
-    
+del qscores
+
+
 my_logger.info('Making NP Arrays')
 mtrain[0] = np.array(mtrain[0])
 mtrain[1] = np.array(mtrain[1])
@@ -110,18 +112,19 @@ mvalid[0] = np.array(mvalid[0])
 mvalid[1] = np.array(mvalid[1])
 my_logger.info('Done')
 
+# pickle.dump(mtrain,file("train.pkl",'wb'))
 
 hidden_dropout = 0.01
 hidden_noise   = 0.01
 BATCH=64
-activation='relu'
-layertype = 'LSTM'
+activation='softplus'
+layertype = 'RNN'
 exp = theanets.Experiment(
     theanets.recurrent.Regressor,
     layers=(
         WINDOW_SIZE,
-        (layertype, WINDOW_SIZE*2,activation),
-        (layertype, 3*WINDOW_SIZE/2,activation),
+        (layertype, WINDOW_SIZE,activation),
+        (layertype, WINDOW_SIZE,activation),
         (layertype, WINDOW_SIZE,activation),
         WINDOW_SIZE
     )
@@ -129,23 +132,27 @@ exp = theanets.Experiment(
 
 
 # able to call train multiple times -> parse file and train -> GOTO next file. Save every 10 files?
-my_logger.info('begin pretrain')
-exp.train(
-    mtrain,
-    mvalid,
-    algo='layerwise',
-    patience=1,
-    learning_rate=1e-3,
-    max_gradient_norm=10,
-    input_dropout =hidden_dropout,
-    hidden_dropout=hidden_dropout,
-    #hidden_noise=hidden_noise,
-    min_improvement=0.01,
-    save_progress=("preregressor-{}".format(datetime.datetime.now().isoformat())),
-    save_every=5,
-    #        train_batches=100,
-    batch_size=BATCH,
-)
+if False:
+    my_logger.info('begin pretrain')
+    exp.train(
+        mtrain,
+        mvalid,
+        algo='layerwise',
+        patience=1,
+        learning_rate=1e-3,
+        max_gradient_norm=10,
+        input_dropout =hidden_dropout,
+        hidden_dropout=hidden_dropout,
+        #hidden_noise=hidden_noise,
+        min_improvement=0.01,
+        save_progress=("preregressor-{}".format(datetime.datetime.now().isoformat())),
+        save_every=5,
+        #        train_batches=100,
+        batch_size=BATCH,
+    )
+    exp.save("end-pretrain-{}".format(datetime.datetime.now().isoformat()))
+
+exp.load("preregressor-2015-12-07T23:10:55.079138")
 
 my_logger.info('begin training')
 exp.train(

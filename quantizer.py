@@ -60,6 +60,33 @@ def json_eq(a,b):
         ''' equality via json -- slow'''
         return json.dumps(a) == json.dumps(b)        
 
+def note_on(when,channel,instr):
+        return ("on",when,channel,instr)
+
+def note_off(when,channel,instr):
+        return ("off",when,channel,instr)
+
+def dl_2_events(preds):
+        state = TVECSIZE*[False]
+        thresh = 0.1
+        out = list()
+        for i in range(0,len(preds)):
+                when = i * TS
+                for j in range(0,TVECSIZE):
+                        channel = 1 + math.floor(j/VECSIZE)
+                        instr   = j % VECSIZE
+                        if state[j] and preds[i][j] > thresh:
+                                pass
+                        elif not state[j] and preds[i][j] > thresh:
+                                out.append(note_on(when, channel, instr))
+                                state[j] = True
+                        elif state[j] and not preds[i][j] > thresh:
+                                out.append(note_off(when, channel, instr))
+                                state[j] = False
+                        else:
+                                pass
+        return out
+                                
 
 ''' used for test cases '''
 convert_lines_test_x = [
@@ -97,7 +124,19 @@ def convert_lines_test():
         assert arr[10,67] == 1
         assert arr[5,0] == 0                
         assert arr[10,VECSIZE+67] == 1
-        
+        events = dl_2_events(arr)
+        assert events[0][0] == "on"
+        assert events[1][0] == "on"
+        assert events[0][1] == 0.0
+        assert events[1][1] == 0.0
+        assert events[0][2] == 1
+        assert events[1][2] == 2
+        assert events[0][3] == 59
+        assert events[1][3] == 59
+        print events[-1]
+        assert events[-1][0] == "off"
+        assert events[-1][3] == 67
+        assert events[-1][1] == TS*(6+6) # hmmm
         
 
 def tests():

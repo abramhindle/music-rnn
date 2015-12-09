@@ -21,11 +21,24 @@ scores = args.scores
 qscores = [quantizer.convert_file(filename) for filename in scores]
 
 network = pickle.load(file(args.brain))
+our_score = np.array(qscores[0],dtype=np.float32)
 # stupid hack for a bad brain
-our_score = np.array(qscores[0][15000:],dtype=np.float32)
 if (args.idiot):
     our_score = our_score[:,0:576]
     
 mtest = np.array([our_score])
 preds = network.predict( mtest )
+events = quantizer.dl_2_events(preds[0])
+print events
 
+import midiit
+
+# from itself
+pattern = midiit.generate_midi(events)
+midiit.pattern_to_file("pattern.mid",pattern)
+
+def eval_seq( score ):
+    mtest = np.array([score])
+    preds = network.predict( mtest )
+    events = quantizer.dl_2_events(preds[0])
+    return (events)
