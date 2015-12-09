@@ -33,7 +33,7 @@ if (args.idiot):
 
 events = quantizer.dl_2_events(our_score)
 pattern = midiit.generate_midi(events)
-midiit.pattern_to_file("input.mid",pattern)
+midiit.pattern_to_file("outmidi/input.mid",pattern)
 
     
 mtest = np.array([our_score])
@@ -44,7 +44,7 @@ print events
 
 # from itself
 pattern = midiit.generate_midi(events)
-midiit.pattern_to_file("pattern.mid",pattern)
+midiit.pattern_to_file("outmidi/pattern.mid",pattern)
 
 def eval_seq( score ):
     mtest = np.array([score])
@@ -66,7 +66,7 @@ def evolution( score, recurs ):
         mtest = preds
         events = quantizer.dl_2_events(preds[0])
         pattern = midiit.generate_midi(events)
-        midiit.pattern_to_file("evolution-{:04d}.mid".format(i),pattern)    
+        midiit.pattern_to_file("outmidi/evolution-{:04d}.mid".format(i),pattern)    
     return mtest
 
 def play_midi_from_arr(preds):
@@ -75,6 +75,28 @@ def play_midi_from_arr(preds):
 
 def play_midi(events):
     pattern = midiit.generate_midi(events)
-    midiit.pattern_to_file("play.mid",pattern)
+    midiit.pattern_to_file("outmidi/play.mid",pattern)
     os.system("xterm -e timidity play.mid &")
 
+def sequential_step(score):
+    # if its too big chop it down
+    if (len(score) > 3000):
+        score = score[len(score)-2000:]
+    mtest = np.array([score])
+    preds = network.predict( mtest )
+    head = preds[0][len(preds[0])-1:len(preds[0])]
+    out = np.concatenate((score,head))
+    return out
+
+def sequential(score, steps, prefix="sequential", skip=100):
+    for i in range(0,steps):
+        score = sequential_step(score)
+        if i%skip == 0:
+            events = quantizer.dl_2_events(score)
+            pattern = midiit.generate_midi(events)
+            midiit.pattern_to_file("outmidi/sequential-{:06d}.mid".format(i),pattern)
+        
+
+
+    
+    

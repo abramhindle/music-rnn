@@ -81,6 +81,14 @@ def dl_2_events(preds):
                         elif state[j] and not preds[i][j] > thresh:
                                 out.append(note_off(when, channel, instr))
                                 state[j] = False
+        # close notes
+        for j in range(0,TVECSIZE):
+                when = len(preds)*TS
+                channel = 1 + math.floor(j/VECSIZE)
+                instr   = j % VECSIZE
+                if state[j]:
+                        out.append(note_off(when, channel, instr))
+
         return out
                                 
 
