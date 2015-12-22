@@ -66,6 +66,11 @@ def note_on(when,channel,instr):
 def note_off(when,channel,instr):
         return ("off",when,channel,instr)
 
+def normalize(arr, threshold=0.1):
+        arr[arr < threshold] = 0.0
+        arr[arr > 0.0] = 1.0
+        return arr
+
 def dl_2_events(preds):
         state = TVECSIZE*[False]
         thresh = 0.1

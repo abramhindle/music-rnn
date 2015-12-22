@@ -62,7 +62,7 @@ def recursive_eval( score, recurs ):
 def evolution( score, recurs ):
     mtest = np.array([score])
     for i in range(0,recurs):
-        preds = network.predict( mtest )
+        preds = quantizer.normalize(network.predict( mtest ))
         mtest = preds
         events = quantizer.dl_2_events(preds[0])
         pattern = midiit.generate_midi(events)
@@ -84,7 +84,7 @@ def sequential_step(score):
         score = score[len(score)-2000:]
     mtest = np.array([score])
     preds = network.predict( mtest )
-    head = preds[0][len(preds[0])-1:len(preds[0])]
+    head = quantizer.normalize(preds[0][len(preds[0])-1:len(preds[0])])
     out = np.concatenate((score,head))
     return out
 
